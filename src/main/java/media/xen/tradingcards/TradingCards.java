@@ -52,10 +52,10 @@ public class TradingCards
         CommandExecutor {
     private static TradingCards INSTANCE;
     private Map<String, Database> databases = new HashMap<>();
-    List < EntityType > hostileMobs = new ArrayList();
-    List < EntityType > passiveMobs = new ArrayList();
-    List < EntityType > neutralMobs = new ArrayList();
-    List < EntityType > bossMobs = new ArrayList();
+    List<EntityType> hostileMobs = new ArrayList();
+    List<EntityType> passiveMobs = new ArrayList();
+    List<EntityType> neutralMobs = new ArrayList();
+    List<EntityType> bossMobs = new ArrayList();
     public static Permission permRarities = new Permission("cards.rarity");
     boolean hasVault;
     boolean hasMobArena;
@@ -78,13 +78,13 @@ public class TradingCards
         String serverVersion = Bukkit.getServer().getVersion();
         getDataFolder().mkdirs();
         INSTANCE = this;
-        List < EntityType > safeHostileMobs = Arrays.asList(
+        List<EntityType> safeHostileMobs = Arrays.asList(
                 EntityType.SPIDER, EntityType.CAVE_SPIDER, EntityType.ZOMBIE, EntityType.SKELETON, EntityType.CREEPER, EntityType.BLAZE, EntityType.SILVERFISH, EntityType.GHAST, EntityType.SLIME, EntityType.EVOKER, EntityType.VINDICATOR, EntityType.VEX, EntityType.SHULKER, EntityType.GUARDIAN, EntityType.MAGMA_CUBE, EntityType.ELDER_GUARDIAN, EntityType.STRAY, EntityType.HUSK, EntityType.DROWNED, EntityType.WITCH, EntityType.ZOMBIE_VILLAGER, EntityType.ENDERMITE);
-        List < EntityType > safeNeutralMobs = Arrays.asList(
+        List<EntityType> safeNeutralMobs = Arrays.asList(
                 EntityType.ENDERMAN, EntityType.POLAR_BEAR, EntityType.LLAMA, EntityType.WOLF, EntityType.DOLPHIN, EntityType.DOLPHIN, EntityType.SNOWMAN, EntityType.IRON_GOLEM);
-        List < EntityType > safePassiveMobs = Arrays.asList(
+        List<EntityType> safePassiveMobs = Arrays.asList(
                 EntityType.DONKEY, EntityType.MULE, EntityType.SKELETON_HORSE, EntityType.CHICKEN, EntityType.COW, EntityType.SQUID, EntityType.TURTLE, EntityType.TROPICAL_FISH, EntityType.PUFFERFISH, EntityType.SHEEP, EntityType.PIG, EntityType.PHANTOM, EntityType.SALMON, EntityType.COD, EntityType.RABBIT, EntityType.VILLAGER, EntityType.BAT, EntityType.PARROT, EntityType.HORSE);
-        List < EntityType > safeBossMobs = Arrays.asList(
+        List<EntityType> safeBossMobs = Arrays.asList(
                 EntityType.ENDER_DRAGON, EntityType.WITHER);
         this.hostileMobs.addAll(safeHostileMobs);
         this.neutralMobs.addAll(safeNeutralMobs);
@@ -133,8 +133,7 @@ public class TradingCards
             initializeDatabase("trading_cards", "CREATE TABLE IF NOT EXISTS cards(`id` INTEGER NOT NULL PRIMARY KEY, `rarity` varchar(255), `about` varchar(255), `series` varchar(255), `name` varchar(255), `type` varchar(255), `info` varchar(255), `price` int); CREATE TABLE IF NOT EXISTS decks(`id` INTEGER NOT NULL PRIMARY KEY, `uuid` varchar(512), `deckID` int, `card` int, `isShiny` int, `count` int)");
             System.out.println("[TradingCards] SQLite is enabled!");
             sqliteTransfer();
-        }
-        else {
+        } else {
             usingSqlite = false;
             System.out.println("[TradingCards] Legacy YML mode is enabled!");
         }
@@ -218,7 +217,7 @@ public class TradingCards
         if (getServer().getPluginManager().getPlugin("Vault") == null) {
             return false;
         }
-        RegisteredServiceProvider < Economy > rsp = Bukkit.getServicesManager().getRegistration(Economy.class);
+        RegisteredServiceProvider<Economy> rsp = Bukkit.getServicesManager().getRegistration(Economy.class);
         if (rsp == null) {
             return false;
         }
@@ -267,7 +266,7 @@ public class TradingCards
     public ItemStack createDeck(Player p, int num) {
         ItemStack deck = getBlankDeck();
         ItemMeta deckMeta = deck.getItemMeta();
-        deckMeta.setDisplayName(cMsg(getConfig().getString("General.Deck-Prefix") + p.getName() + "'s Deck #" + num));
+        deckMeta.setDisplayName(cMsg(getConfig().getString("General.Deck-Prefix") + getMessagesData().getString("Messages.PlayerDeck") + " " + p.getName() + " #" + num));
         if (getConfig().getBoolean("General.Hide-Enchants", true)) deckMeta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
         deck.setItemMeta(deckMeta);
         deck.addUnsafeEnchantment(Enchantment.DURABILITY, 10);
@@ -294,7 +293,8 @@ public class TradingCards
         if (this.deckData == null || this.deckDataFile == null) return;
         try {
             getDeckData().save(this.deckDataFile);
-        } catch(IOException iOException) {}
+        } catch (IOException iOException) {
+        }
     }
 
     public void saveDefaultDeckFile() {
@@ -322,7 +322,8 @@ public class TradingCards
         if (this.messagesData == null || this.messagesDataFile == null) return;
         try {
             getMessagesData().save(this.messagesDataFile);
-        } catch(IOException iOException) {}
+        } catch (IOException iOException) {
+        }
     }
 
     public void saveDefaultMessagesFile() {
@@ -350,7 +351,8 @@ public class TradingCards
         if (this.cardsData == null || this.cardsDataFile == null) return;
         try {
             getCardsData().save(this.cardsDataFile);
-        } catch(IOException iOException) {}
+        } catch (IOException iOException) {
+        }
     }
 
     public void saveDefaultCardsFile() {
@@ -359,7 +361,7 @@ public class TradingCards
     }
 
     public boolean hasDeck(Player p, int num) {
-        for (ItemStack i: p.getInventory()) {
+        for (ItemStack i : p.getInventory()) {
             if (i != null && i.getType() == Material.valueOf(getConfig().getString("General.Deck-Material")) && i.containsEnchantment(Enchantment.DURABILITY) && i.getEnchantmentLevel(Enchantment.DURABILITY) == 10) {
 
                 String name = i.getItemMeta().getDisplayName();
@@ -371,26 +373,25 @@ public class TradingCards
     }
 
     public boolean deleteCardSqlite(Player p, String card, String rarity) {
-        int cardID = getCardID(card,rarity);
+        int cardID = getCardID(card, rarity);
         String playerID = p.getUniqueId().toString();
-        if(hasCard(p,card,rarity) == 1) {
-            getDatabase("trading_cards").executeStatement("DELETE FROM decks WHERE uuid = '"+playerID+"' AND card="+cardID+" LIMIT 1");
+        if (hasCard(p, card, rarity) == 1) {
+            getDatabase("trading_cards").executeStatement("DELETE FROM decks WHERE uuid = '" + playerID + "' AND card=" + cardID + " LIMIT 1");
             return true;
-        } else if(hasCard(p,card,rarity) > 1) {
-            int cardCount = hasCard(p,card,rarity) - 1;
-            getDatabase("trading_cards").executeStatement("UPDATE decks SET count = "+cardCount+" WHERE uuid = '"+playerID+"' AND card="+cardID+" LIMIT 1");
+        } else if (hasCard(p, card, rarity) > 1) {
+            int cardCount = hasCard(p, card, rarity) - 1;
+            getDatabase("trading_cards").executeStatement("UPDATE decks SET count = " + cardCount + " WHERE uuid = '" + playerID + "' AND card=" + cardID + " LIMIT 1");
             return true;
-        }
-        else return false;
+        } else return false;
     }
 
     public boolean deleteCard(Player p, String card, String rarity) {
-        if(usingSqlite) return deleteCardSqlite(p,card,rarity);
+        if (usingSqlite) return deleteCardSqlite(p, card, rarity);
         if (hasCard(p, card, rarity) > 0) {
             String uuidString = p.getUniqueId().toString();
             int deckNumber = 0;
             ConfigurationSection deckList = getDeckData().getConfigurationSection("Decks.Inventories." + uuidString);
-            if (deckList != null) for (String s: deckList.getKeys(false)) {
+            if (deckList != null) for (String s : deckList.getKeys(false)) {
                 deckNumber += Integer.valueOf(s).intValue();
                 debugMsg("[TradingCards] Deck running total: " + deckNumber);
             }
@@ -400,9 +401,9 @@ public class TradingCards
                 debugMsg("[TradingCards] Decks:" + deckNumber);
                 for (int i = 0; i < deckNumber; i++) {
                     if (getDeckData().contains("Decks.Inventories." + uuidString + "." + (i + 1))) {
-                        List < String > contents = getDeckData().getStringList("Decks.Inventories." + uuidString + "." + (i + 1));
-                        List < String > contentsNew = new ArrayList < >();
-                        for (String s2: contents) {
+                        List<String> contents = getDeckData().getStringList("Decks.Inventories." + uuidString + "." + (i + 1));
+                        List<String> contentsNew = new ArrayList<>();
+                        for (String s2 : contents) {
                             String[] splitContents = s2.split(",");
                             if (getConfig().getBoolean("General.Eat-Shiny-Cards") && splitContents[3].equalsIgnoreCase("yes")) {
                                 debugMsg("[TradingCards] Eat-Shiny-Cards is true and card is shiny!");
@@ -457,7 +458,8 @@ public class TradingCards
                                 contentsNew.add(s2);
                                 continue;
                             }
-                            if (getConfig().getBoolean("General.Eat-Shiny-Cards") || !splitContents[3].equalsIgnoreCase("no")) continue;
+                            if (getConfig().getBoolean("General.Eat-Shiny-Cards") || !splitContents[3].equalsIgnoreCase("no"))
+                                continue;
                             debugMsg("[TradingCards] Eat-Shiny-Cards is false and card is not shiny!");
                             if (splitContents[0].equalsIgnoreCase(rarity)) {
                                 if (splitContents[1].equalsIgnoreCase(card)) {
@@ -496,7 +498,7 @@ public class TradingCards
     }
 
     public int getCardCount(String uuid, Integer deckNum, Integer cardID) {
-        Integer cardCount = (Integer) getDatabase("trading_cards").queryValue("SELECT count FROM decks WHERE uuid = '" + uuid + "' AND deckID = "+ deckNum +" AND card = " + cardID + "", "ID");
+        Integer cardCount = (Integer) getDatabase("trading_cards").queryValue("SELECT count FROM decks WHERE uuid = '" + uuid + "' AND deckID = " + deckNum + " AND card = " + cardID + "", "ID");
         return cardCount;
     }
 
@@ -509,13 +511,13 @@ public class TradingCards
         int deckNumber = 0;
         debugMsg("[TradingCards] Started check for card: " + card + ", " + rarity);
         String uuidString = p.getUniqueId().toString();
-        if(usingSqlite) {
-            int cardID = getCardID(card,rarity);
-            if(getDatabase("trading_cards").queryValue("SELECT count FROM decks WHERE uuid = '"+uuidString+"' AND card = "+cardID, "ID") == null) {
+        if (usingSqlite) {
+            int cardID = getCardID(card, rarity);
+            if (getDatabase("trading_cards").queryValue("SELECT count FROM decks WHERE uuid = '" + uuidString + "' AND card = " + cardID, "ID") == null) {
                 return 0;
             } else {
-                int deckID = getPlayerDeckFromCard(uuidString,cardID);
-                return getCardCount(uuidString,deckID,cardID);
+                int deckID = getPlayerDeckFromCard(uuidString, cardID);
+                return getCardCount(uuidString, deckID, cardID);
             }
         } else {
             ConfigurationSection deckList = getDeckData().getConfigurationSection("Decks.Inventories." + uuidString);
@@ -571,13 +573,13 @@ public class TradingCards
         int deckNumber = 0;
         debugMsg("[TradingCards] Started check for card: " + card + ", " + rarity);
         String uuidString = p.getUniqueId().toString();
-        if(usingSqlite) {
-            int cardID = getCardID(card,rarity);
-            if(getDatabase("trading_cards").queryValue("SELECT count FROM decks WHERE uuid = '"+uuidString+"' AND card = "+cardID, "ID") == null) {
+        if (usingSqlite) {
+            int cardID = getCardID(card, rarity);
+            if (getDatabase("trading_cards").queryValue("SELECT count FROM decks WHERE uuid = '" + uuidString + "' AND card = " + cardID, "ID") == null) {
                 return false;
             } else {
                 Integer isShiny = (Integer) getDatabase("trading_cards").queryValue("SELECT isShiny FROM decks WHERE uuid = '" + uuidString + "' AND card = " + cardID + "", "ID");
-                if(isShiny == 1) return true;
+                if (isShiny == 1) return true;
                 else return false;
             }
         } else {
@@ -637,12 +639,12 @@ public class TradingCards
             Map rows = getDatabase("trading_cards").queryMultipleRows("SELECT * FROM decks WHERE uuid = '"+uuidString+"' AND deckID = "+deckNum, "card");
             int cardID = (Integer)rows.get("trading_cards").get(0);
         }*/
-        List < String > contents = getDeckData().getStringList("Decks.Inventories." + uuidString + "." + deckNum);
-        List < ItemStack > cards = new ArrayList < >();
-        List < Integer > quantity = new ArrayList < >();
+        List<String> contents = getDeckData().getStringList("Decks.Inventories." + uuidString + "." + deckNum);
+        List<ItemStack> cards = new ArrayList<>();
+        List<Integer> quantity = new ArrayList<>();
         ItemStack card = null;
         boolean isNull = false;
-        for (String s: contents) {
+        for (String s : contents) {
             debugMsg("[TradingCards] Deck file content: " + s);
             String[] splitContents = s.split(",");
             if (splitContents.length > 1) {
@@ -677,10 +679,10 @@ public class TradingCards
         }
         int invSlots = 27;
         if (getConfig().getBoolean("General.Use-Large-Decks")) invSlots = 54;
-        Inventory inv = Bukkit.createInventory(null, invSlots, cMsg("&c" + p.getName() + "'s Deck #" + deckNum));
+        Inventory inv = Bukkit.createInventory(null, invSlots, cMsg("&c" + getMessagesData().getString("Messages.PlayerDeck") + " " + p.getName() + " #" + deckNum));
         debugMsg("[TradingCards] Created inventory.");
         int iter = 0;
-        for (ItemStack i: cards) {
+        for (ItemStack i : cards) {
             debugMsg("[TradingCards] Item " + i.getType().toString() + " added to inventory!");
             i.setAmount(quantity.get(iter).intValue());
             inv.addItem(i);
@@ -693,8 +695,10 @@ public class TradingCards
     public String isRarity(String input) {
         String output = input.substring(0, 1).toUpperCase() + input.substring(1);
         if (getConfig().contains("Rarities." + input.replaceAll("_", " "))) return input.replaceAll("_", " ");
-        if (getConfig().contains("Rarities." + input.replaceAll("_", " ").toUpperCase())) return input.replaceAll("_", " ").toUpperCase();
-        if (getConfig().contains("Rarities." + input.replaceAll("_", " ").toLowerCase())) return input.replaceAll("_", " ").toLowerCase();
+        if (getConfig().contains("Rarities." + input.replaceAll("_", " ").toUpperCase()))
+            return input.replaceAll("_", " ").toUpperCase();
+        if (getConfig().contains("Rarities." + input.replaceAll("_", " ").toLowerCase()))
+            return input.replaceAll("_", " ").toLowerCase();
         if (getConfig().contains("Rarities." + output.replaceAll("_", " "))) return output.replaceAll("_", " ");
         if (getConfig().contains("Rarities." + capitaliseUnderscores(input))) return output.replaceAll("_", " ");
         return "None";
@@ -717,8 +721,8 @@ public class TradingCards
         EntityType type = null;
         try {
             type = EntityType.valueOf(input.toUpperCase());
-            return ! (!this.hostileMobs.contains(type) && !this.neutralMobs.contains(type) && !this.passiveMobs.contains(type) && !this.bossMobs.contains(type));
-        } catch(IllegalArgumentException ex) {
+            return !(!this.hostileMobs.contains(type) && !this.neutralMobs.contains(type) && !this.passiveMobs.contains(type) && !this.bossMobs.contains(type));
+        } catch (IllegalArgumentException ex) {
 
             return false;
         }
@@ -728,24 +732,25 @@ public class TradingCards
     public void onInventoryClose(InventoryCloseEvent e) {
         String viewTitle = e.getView().getTitle();
         debugMsg("[TradingCards] Title: " + viewTitle);
-        if (viewTitle.contains("s Deck #")) {
+        if (viewTitle.contains(getMessagesData().getString("Messages.PlayerDeck"))) {
             debugMsg("[TradingCards] Deck closed.");
             ItemStack[] contents = e.getInventory().getContents();
-            String[] title = viewTitle.split("'");
+            String[] title = viewTitle.split(" ");
             String[] titleNum = viewTitle.split("#");
             int deckNum = Integer.valueOf(titleNum[1]).intValue();
             debugMsg("[TradingCards] Deck num: " + deckNum);
             debugMsg("[TradingCards] Title: " + title[0]);
             debugMsg("[TradingCards] Title: " + title[1]);
-            UUID id = Bukkit.getOfflinePlayer(ChatColor.stripColor(title[0])).getUniqueId();
+            debugMsg("[TradingCards] Title: " + title[2]);
+            UUID id = Bukkit.getOfflinePlayer(ChatColor.stripColor(title[2])).getUniqueId();
             debugMsg("[TradingCards] New ID: " + id.toString());
-            List < String > serialized = new ArrayList < >();
+            List<String> serialized = new ArrayList<>();
             ItemStack[] arrayOfItemStack1;
             for (int j = (arrayOfItemStack1 = contents).length, i = 0; i < j; i++) {
 
                 ItemStack it = arrayOfItemStack1[i];
                 if (it != null && it.getType() == Material.valueOf(getConfig().getString("General.Card-Material")) && it.getItemMeta().hasDisplayName()) {
-                    List < String > lore = it.getItemMeta().getLore();
+                    List<String> lore = it.getItemMeta().getLore();
                     String shinyPrefix = getConfig().getString("General.Shiny-Name");
                     String rarity = ChatColor.stripColor(lore.get(lore.size() - 1)).replaceAll(shinyPrefix + " ", "");
                     String card = getCardName(rarity, it.getItemMeta().getDisplayName());
@@ -765,7 +770,7 @@ public class TradingCards
             }
         }
     }
-    
+
     public void debugMsg(String msg) {
         if (getConfig().getBoolean("General.Debug-Mode")) System.out.println(msg);
     }
@@ -783,8 +788,8 @@ public class TradingCards
         cleaned = cleaned.replaceAll(shinyPrefix + " ", "");
         String[] cleanedArray = cleaned.split(" ");
         ConfigurationSection cs = getCardsData().getConfigurationSection("Cards." + rarity);
-        Set < String > keys = cs.getKeys(false);
-        for (String s: keys) {
+        Set<String> keys = cs.getKeys(false);
+        for (String s : keys) {
             debugMsg("[TradingCards] getCardName s: " + s);
             debugMsg("[TradingCards] getCardName display: " + display);
             if (cleanedArray.length > 1) {
@@ -793,14 +798,22 @@ public class TradingCards
                 if ((cleanedArray[0] + " " + cleanedArray[1]).matches(s)) return s;
                 if (cleanedArray.length > 2 && (cleanedArray[1] + "_" + cleanedArray[2]).matches(s)) return s;
                 if (cleanedArray.length > 2 && (cleanedArray[1] + " " + cleanedArray[2]).matches(s)) return s;
-                if (cleanedArray.length > 3 && (cleanedArray[1] + "_" + cleanedArray[2] + "_" + cleanedArray[3]).matches(s)) return s;
-                if (cleanedArray.length > 3 && (cleanedArray[1] + " " + cleanedArray[2] + " " + cleanedArray[3]).matches(s)) return s;
-                if (cleanedArray.length > 4 && (cleanedArray[1] + "_" + cleanedArray[2] + "_" + cleanedArray[3] + "_" + cleanedArray[4]).matches(s)) return s;
-                if (cleanedArray.length > 4 && (cleanedArray[1] + " " + cleanedArray[2] + " " + cleanedArray[3] + " " + cleanedArray[4]).matches(s)) return s;
-                if (cleanedArray.length > 5 && (cleanedArray[1] + "_" + cleanedArray[2] + "_" + cleanedArray[3] + "_" + cleanedArray[4] + "_" + cleanedArray[5]).matches(s)) return s;
-                if (cleanedArray.length > 5 && (cleanedArray[1] + " " + cleanedArray[2] + " " + cleanedArray[3] + " " + cleanedArray[4] + " " + cleanedArray[5]).matches(s)) return s;
-                if (cleanedArray.length > 6 && (cleanedArray[1] + "_" + cleanedArray[2] + "_" + cleanedArray[3] + "_" + cleanedArray[4] + "_" + cleanedArray[5] + "_" + cleanedArray[6]).matches(s)) return s;
-                if (cleanedArray.length > 6 && (cleanedArray[1] + " " + cleanedArray[2] + " " + cleanedArray[3] + " " + cleanedArray[4] + " " + cleanedArray[5] + " " + cleanedArray[6]).matches(s)) return s;
+                if (cleanedArray.length > 3 && (cleanedArray[1] + "_" + cleanedArray[2] + "_" + cleanedArray[3]).matches(s))
+                    return s;
+                if (cleanedArray.length > 3 && (cleanedArray[1] + " " + cleanedArray[2] + " " + cleanedArray[3]).matches(s))
+                    return s;
+                if (cleanedArray.length > 4 && (cleanedArray[1] + "_" + cleanedArray[2] + "_" + cleanedArray[3] + "_" + cleanedArray[4]).matches(s))
+                    return s;
+                if (cleanedArray.length > 4 && (cleanedArray[1] + " " + cleanedArray[2] + " " + cleanedArray[3] + " " + cleanedArray[4]).matches(s))
+                    return s;
+                if (cleanedArray.length > 5 && (cleanedArray[1] + "_" + cleanedArray[2] + "_" + cleanedArray[3] + "_" + cleanedArray[4] + "_" + cleanedArray[5]).matches(s))
+                    return s;
+                if (cleanedArray.length > 5 && (cleanedArray[1] + " " + cleanedArray[2] + " " + cleanedArray[3] + " " + cleanedArray[4] + " " + cleanedArray[5]).matches(s))
+                    return s;
+                if (cleanedArray.length > 6 && (cleanedArray[1] + "_" + cleanedArray[2] + "_" + cleanedArray[3] + "_" + cleanedArray[4] + "_" + cleanedArray[5] + "_" + cleanedArray[6]).matches(s))
+                    return s;
+                if (cleanedArray.length > 6 && (cleanedArray[1] + " " + cleanedArray[2] + " " + cleanedArray[3] + " " + cleanedArray[4] + " " + cleanedArray[5] + " " + cleanedArray[6]).matches(s))
+                    return s;
                 if (cleanedArray.length == 1 && cleanedArray[0].matches(s)) return s;
                 if (cleanedArray.length == 2 && cleanedArray[1].matches(s)) return s;
             }
@@ -831,9 +844,10 @@ public class TradingCards
         String specialCardColour = getConfig().getString("Colours.BoosterPackSpecialCards");
         ItemMeta pMeta = boosterPack.getItemMeta();
         pMeta.setDisplayName(cMsg(prefix + nameColour + packName.replaceAll("_", " ")));
-        List < String > lore = new ArrayList < >();
+        List<String> lore = new ArrayList<>();
         lore.add(cMsg(String.valueOf(normalCardColour) + numNormalCards + loreColour + " " + normalRarity.toUpperCase()));
-        if (hasExtraRarity) lore.add(cMsg(String.valueOf(extraCardColour) + numExtraCards + loreColour + " " + extraRarity.toUpperCase()));
+        if (hasExtraRarity)
+            lore.add(cMsg(String.valueOf(extraCardColour) + numExtraCards + loreColour + " " + extraRarity.toUpperCase()));
         lore.add(cMsg(String.valueOf(specialCardColour) + numSpecialCards + loreColour + " " + specialRarity.toUpperCase()));
         pMeta.setLore(lore);
         if (getConfig().getBoolean("General.Hide-Enchants", true)) pMeta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
@@ -853,7 +867,7 @@ public class TradingCards
                     if (p.getGameMode() != GameMode.CREATIVE) {
                         ItemStack boosterPack = event.getPlayer().getInventory().getItemInMainHand();
                         ItemMeta packMeta = boosterPack.getItemMeta();
-                        List < String > lore = packMeta.getLore();
+                        List<String> lore = packMeta.getLore();
                         if (p.getInventory().getItemInMainHand().getAmount() > 1) {
                             p.getInventory().getItemInMainHand().setAmount(p.getInventory().getItemInMainHand().getAmount() - 1);
                         } else {
@@ -875,7 +889,7 @@ public class TradingCards
                         int i;
                         String prefix = ChatColor.stripColor(cMsg(getConfig().getString("General.BoosterPack-Prefix")));
                         String packName = "None";
-                        if(packMeta.hasDisplayName()) {
+                        if (packMeta.hasDisplayName()) {
                             packName = ChatColor.stripColor(packMeta.getDisplayName());
                             if (getConfig().getBoolean("General.Debug-Mode")) {
                                 System.out.println("[TradingCards] Pack name first pass: " + packName);
@@ -886,15 +900,15 @@ public class TradingCards
                                 System.out.println("[TradingCards] Pack name second pass: " + packName);
                             packName = packName.replaceAll(" ", "_");
                             if (getConfig().getBoolean("General.Debug-Mode"))
-                                System.out.println("[TradingCards] Pack name third pass: "+packName);
+                                System.out.println("[TradingCards] Pack name third pass: " + packName);
                         }
-                        if(packName.equals("None")) {
+                        if (packName.equals("None")) {
                             System.out.println("[TradingCards] Error: Pack name not found...");
                             return;
                         }
                         for (i = 0; i < normalCardAmount; i++) {
                             String normRarity = WordUtils.capitalizeFully(line1[1]);
-                            debugMsg("[TradingCards] Pack name is: "+packName);
+                            debugMsg("[TradingCards] Pack name is: " + packName);
                             normRarity = upgradeRarity(packName, normRarity);
                             if (p.getInventory().firstEmpty() != -1) {
                                 p.getInventory().addItem(generateCard(normRarity, false));
@@ -907,7 +921,7 @@ public class TradingCards
                         }
                         for (i = 0; i < specialCardAmount; i++) {
                             String specRarity = WordUtils.capitalizeFully(line2[1]);
-                            debugMsg("[TradingCards] Pack name is: "+packName);
+                            debugMsg("[TradingCards] Pack name is: " + packName);
                             specRarity = upgradeRarity(packName, specRarity);
                             if (p.getInventory().firstEmpty() != -1) {
                                 p.getInventory().addItem(generateCard(specRarity, false));
@@ -920,7 +934,7 @@ public class TradingCards
                         }
                         if (hasExtra) for (i = 0; i < extraCardAmount; i++) {
                             String extrRarity = WordUtils.capitalizeFully(line3[1]);
-                            debugMsg("[TradingCards] Pack name is: "+packName);
+                            debugMsg("[TradingCards] Pack name is: " + packName);
                             extrRarity = upgradeRarity(packName, extrRarity);
                             if (p.getInventory().firstEmpty() != -1) {
                                 p.getInventory().addItem(generateCard(extrRarity, false));
@@ -957,30 +971,30 @@ public class TradingCards
     }
 
     public String upgradeRarity(String packName, String rarity) {
-        debugMsg("[TradingCards] Starting booster pack upgrade check - Current rarity is "+rarity+"!");
+        debugMsg("[TradingCards] Starting booster pack upgrade check - Current rarity is " + rarity + "!");
         ConfigurationSection rarities = getConfig().getConfigurationSection("Rarities");
-        Set < String > rarityKeys = rarities.getKeys(false);
-        Map < Integer,String > rarityMap = new HashMap < >();
+        Set<String> rarityKeys = rarities.getKeys(false);
+        Map<Integer, String> rarityMap = new HashMap<>();
         int i = 0;
         int curRarity = 0;
-        for (String key: rarityKeys) {
+        for (String key : rarityKeys) {
             rarityMap.put(Integer.valueOf(i), key);
-            if(key.equalsIgnoreCase(rarity)) curRarity = i;
+            if (key.equalsIgnoreCase(rarity)) curRarity = i;
             debugMsg("[TradingCards] Rarity " + i + " is " + key);
             i++;
         }
         int chance = getConfig().getInt("BoosterPacks." + packName + ".UpgradeChance", 0);
-        if(chance <= 0) {
+        if (chance <= 0) {
             debugMsg("[TradingCards] Pack has upgrade chance set to 0! Exiting..");
             return rarityMap.get(curRarity);
         }
         int random = this.r.nextInt(100000) + 1;
-        if(random <= chance) {
-            if(curRarity < i) curRarity++;
-            debugMsg("[TradingCards] Card upgraded! new rarity is "+rarityMap.get(curRarity)+"!");
+        if (random <= chance) {
+            if (curRarity < i) curRarity++;
+            debugMsg("[TradingCards] Card upgraded! new rarity is " + rarityMap.get(curRarity) + "!");
             return rarityMap.get(curRarity);
         }
-        debugMsg("[TradingCards] Card not upgraded! Rarity remains at "+rarityMap.get(curRarity)+"!");
+        debugMsg("[TradingCards] Card not upgraded! Rarity remains at " + rarityMap.get(curRarity) + "!");
         return rarityMap.get(curRarity);
     }
 
@@ -1014,7 +1028,8 @@ public class TradingCards
             if (!isMobBoss(e)) return "None";
             if (!alwaysDrop) {
                 if (shouldItDrop > getConfig().getInt("Chances.Boss-Chance")) return "None";
-                if (getConfig().getBoolean("Chances.Boss-Drop")) bossRarity = getConfig().getInt("Chances.Boss-Drop-Rarity");
+                if (getConfig().getBoolean("Chances.Boss-Drop"))
+                    bossRarity = getConfig().getInt("Chances.Boss-Drop-Rarity");
                 type = "Boss";
             } else {
                 type = "Boss";
@@ -1022,17 +1037,17 @@ public class TradingCards
 
         }
         ConfigurationSection rarities = getConfig().getConfigurationSection("Rarities");
-        Set < String > rarityKeys = rarities.getKeys(false);
-        Map < String,
-                Integer > rarityChances = new HashMap < >();
-        Map < Integer,
-                String > rarityIndexes = new HashMap < >();
+        Set<String> rarityKeys = rarities.getKeys(false);
+        Map<String,
+                Integer> rarityChances = new HashMap<>();
+        Map<Integer,
+                String> rarityIndexes = new HashMap<>();
         int i = 0;
         int mini = 0;
         int random = this.r.nextInt(100000) + 1;
         debugMsg("[TradingCards] Random Card Num: " + random);
         debugMsg("[TradingCards] Type: " + type);
-        for (String key: rarityKeys) {
+        for (String key : rarityKeys) {
             rarityIndexes.put(Integer.valueOf(i), key);
             i++;
             debugMsg("[TradingCards] " + i + ", " + key);
@@ -1080,13 +1095,13 @@ public class TradingCards
     }
 
     public boolean isOnList(Player p) {
-        List < String > playersOnList = getConfig().getStringList("Blacklist.Players");
+        List<String> playersOnList = getConfig().getStringList("Blacklist.Players");
         return playersOnList.contains(p.getName());
 
     }
 
     public void addToList(Player p) {
-        List < String > playersOnList = getConfig().getStringList("Blacklist.Players");
+        List<String> playersOnList = getConfig().getStringList("Blacklist.Players");
         playersOnList.add(p.getName());
         getConfig().set("Blacklist.Players", null);
         getConfig().set("Blacklist.Players", playersOnList);
@@ -1094,7 +1109,7 @@ public class TradingCards
     }
 
     public void removeFromList(Player p) {
-        List < String > playersOnList = getConfig().getStringList("Blacklist.Players");
+        List<String> playersOnList = getConfig().getStringList("Blacklist.Players");
         playersOnList.remove(p.getName());
         getConfig().set("Blacklist.Players", null);
         getConfig().set("Blacklist.Players", playersOnList);
@@ -1110,7 +1125,7 @@ public class TradingCards
     public void onEntityDeath(EntityDeathEvent e) {
         boolean drop = false;
         String worldName = "";
-        List < String > worlds = new ArrayList < >();
+        List<String> worlds = new ArrayList<>();
         if (e.getEntity().getKiller() instanceof Player) {
             Player p = e.getEntity().getKiller();
             drop = ((!isOnList(p) || blacklistMode() != 'b') && ((!isOnList(p) && blacklistMode() == 'b') || (isOnList(p) && blacklistMode() == 'w')));
@@ -1122,7 +1137,7 @@ public class TradingCards
                 debugMsg("[TradingCards] Mob Arena checks starting.");
                 if (this.am.getArenas() != null && !this.am.getArenas().isEmpty()) {
                     debugMsg("[TradingCards] There is at least 1 arena!");
-                    for (Arena arena: this.am.getArenas()) {
+                    for (Arena arena : this.am.getArenas()) {
                         i++;
                         debugMsg("[TradingCards] For arena #" + i + "...");
                         debugMsg("[TradingCards] In arena?: " + arena.inArena(p));
@@ -1142,7 +1157,8 @@ public class TradingCards
         if (drop && !worlds.contains(worldName)) {
 
             String rare = calculateRarity(e.getEntityType(), false);
-            if (getConfig().getBoolean("Chances.Boss-Drop") && isMobBoss(e.getEntityType())) rare = getConfig().getString("Chances.Boss-Drop-Rarity");
+            if (getConfig().getBoolean("Chances.Boss-Drop") && isMobBoss(e.getEntityType()))
+                rare = getConfig().getString("Chances.Boss-Drop-Rarity");
             boolean cancelled = false;
 
             if (rare != "None") {
@@ -1166,9 +1182,9 @@ public class TradingCards
             Player player = e.getEntity().getKiller();
             if (player != null && player instanceof Player) {
                 ConfigurationSection rarities = getConfig().getConfigurationSection("Rarities");
-                Set < String > rarityKeys = rarities.getKeys(false);
+                Set<String> rarityKeys = rarities.getKeys(false);
                 String k = null;
-                for (String key: rarityKeys) {
+                for (String key : rarityKeys) {
                     if (getCardsData().contains("Cards." + key + "." + e.getEntity().getName())) {
                         debugMsg("[TradingCards] " + key);
                         k = key;
@@ -1196,8 +1212,8 @@ public class TradingCards
             ConfigurationSection cardSection = getCardsData().getConfigurationSection("Cards." + rare);
             debugMsg("[TradingCards] generateCard.cardSection: " + getCardsData().contains("Cards." + rare));
             debugMsg("[TradingCards] generateCard.rarity: " + rare);
-            Set < String > cards = cardSection.getKeys(false);
-            List < String > cardNames = new ArrayList < >();
+            Set<String> cards = cardSection.getKeys(false);
+            List<String> cardNames = new ArrayList<>();
             cardNames.addAll(cards);
             int cIndex = this.r.nextInt(cardNames.size());
             String cardName = cardNames.get(cIndex);
@@ -1243,7 +1259,7 @@ public class TradingCards
             } else {
                 cmeta.setDisplayName(cMsg(getConfig().getString("DisplayNames.Cards.Title").replaceAll("%PREFIX%", prefix).replaceAll("%COLOUR%", rarityColour).replaceAll("%NAME%", cardName).replaceAll("%COST%", cost)));
             }
-            List < String > lore = new ArrayList < >();
+            List<String> lore = new ArrayList<>();
             lore.add(cMsg(typeColour + typeDisplay + ": &f" + type));
             if (info.equals("None") || info.equals("")) {
                 lore.add(cMsg(infoColour + infoDisplay + ": &f" + info));
@@ -1252,7 +1268,8 @@ public class TradingCards
                 lore.addAll(wrapString(info));
             }
             lore.add(cMsg(seriesColour + seriesDisplay + ": &f" + series));
-            if (getCardsData().contains("Cards." + rare + "." + cardName + ".About")) lore.add(cMsg(aboutColour + aboutDisplay + ": &f" + about));
+            if (getCardsData().contains("Cards." + rare + "." + cardName + ".About"))
+                lore.add(cMsg(aboutColour + aboutDisplay + ": &f" + about));
             if (isShiny) {
                 lore.add(cMsg(rarityColour + ChatColor.BOLD + getConfig().getString("General.Shiny-Name") + " " + rarityName));
             } else {
@@ -1267,11 +1284,11 @@ public class TradingCards
         return null;
     }
 
-    public List < String > wrapString(String s) {
+    public List<String> wrapString(String s) {
         String parsedString = ChatColor.stripColor(s);
         String addedString = WordUtils.wrap(parsedString, getConfig().getInt("General.Info-Line-Length", 25), "\n", true);
         String[] splitString = addedString.split("\n");
-        List < String > finalArray = new ArrayList < >();
+        List<String> finalArray = new ArrayList<>();
         String[] arrayOfString1;
         for (int j = (arrayOfString1 = splitString).length, i = 0; i < j; i++) {
 
@@ -1345,7 +1362,7 @@ public class TradingCards
         } else {
             cmeta.setDisplayName(cMsg(getConfig().getString("DisplayNames.Cards.Title").replaceAll("%PREFIX%", prefix).replaceAll("%COLOUR%", rarityColour).replaceAll("%NAME%", cardName).replaceAll("%COST%", cost).replaceAll("_", " ")));
         }
-        List < String > lore = new ArrayList < >();
+        List<String> lore = new ArrayList<>();
         lore.add(cMsg(typeColour + typeDisplay + ": &f" + type));
         if (info.equals("None") || info.equals("")) {
             lore.add(cMsg(infoColour + infoDisplay + ": &f" + info));
@@ -1354,7 +1371,8 @@ public class TradingCards
             lore.addAll(wrapString(info));
         }
         lore.add(cMsg(seriesColour + seriesDisplay + ": &f" + series));
-        if (getCardsData().contains("Cards." + rarity + "." + cardName + ".About")) lore.add(cMsg(aboutColour + aboutDisplay + ": &f" + about));
+        if (getCardsData().contains("Cards." + rarity + "." + cardName + ".About"))
+            lore.add(cMsg(aboutColour + aboutDisplay + ": &f" + about));
         if (isShiny) {
             lore.add(cMsg(rarityColour + ChatColor.BOLD + getConfig().getString("General.Shiny-Name") + " " + rarityName));
         } else {
@@ -1403,7 +1421,7 @@ public class TradingCards
         } else {
             cmeta.setDisplayName(cMsg(getConfig().getString("DisplayNames.Cards.Title").replaceAll("%PREFIX%", prefix).replaceAll("%COLOUR%", rarityColour).replaceAll("%NAME%", cardName).replaceAll("%COST%", cost)));
         }
-        List < String > lore = new ArrayList < >();
+        List<String> lore = new ArrayList<>();
         lore.add(cMsg(typeColour + typeDisplay + ": &f" + type));
         if (info.equals("None") || info.equals("")) {
             lore.add(cMsg(infoColour + infoDisplay + ": &f" + info));
@@ -1412,7 +1430,8 @@ public class TradingCards
             lore.addAll(wrapString(info));
         }
         lore.add(cMsg(seriesColour + seriesDisplay + ": &f" + series));
-        if (getCardsData().contains("Cards." + rarity + "." + cardName + ".About")) lore.add(cMsg(aboutColour + aboutDisplay + ": &f" + about));
+        if (getCardsData().contains("Cards." + rarity + "." + cardName + ".About"))
+            lore.add(cMsg(aboutColour + aboutDisplay + ": &f" + about));
         lore.add(cMsg(rarityColour + ChatColor.BOLD + rarityName));
         cmeta.setLore(lore);
         if (getConfig().getBoolean("General.Hide-Enchants", true)) cmeta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
@@ -1422,7 +1441,7 @@ public class TradingCards
 
     @EventHandler
     public void onMobSpawn(CreatureSpawnEvent e) {
-        if (! (e.getEntity() instanceof Player) && e.getSpawnReason() == CreatureSpawnEvent.SpawnReason.SPAWNER && getConfig().getBoolean("General.Spawner-Block")) {
+        if (!(e.getEntity() instanceof Player) && e.getSpawnReason() == CreatureSpawnEvent.SpawnReason.SPAWNER && getConfig().getBoolean("General.Spawner-Block")) {
 
             e.getEntity().setCustomName(getConfig().getString("General.Spawner-Mob-Name"));
             debugMsg("[TradingCards] Spawner mob renamed.");
@@ -1451,11 +1470,11 @@ public class TradingCards
             }
             ConfigurationSection rarities = getConfig().getConfigurationSection("Rarities");
 
-            Set < String > rarityKeys = rarities.getKeys(false);
-            Map < String,
-                    Boolean > children = permRarities.getChildren();
+            Set<String> rarityKeys = rarities.getKeys(false);
+            Map<String,
+                    Boolean> children = permRarities.getChildren();
             String rarity = getConfig().getString("General.Auto-Add-Player-Rarity");
-            for (String key: rarityKeys) {
+            for (String key : rarityKeys) {
 
                 children.put("cards.rarity." + key, Boolean.valueOf(false));
                 permRarities.recalculatePermissibles();
@@ -1513,7 +1532,7 @@ public class TradingCards
         } else {
             Bukkit.broadcastMessage(cMsg(getMessagesData().getString("Messages.Prefix") + " " + getMessagesData().getString("Messages.GiveawayNatural").replaceAll("%player%", sender.getName())));
         }
-        for (Player p: Bukkit.getOnlinePlayers()) {
+        for (Player p : Bukkit.getOnlinePlayers()) {
             String rare = calculateRarity(mob, true);
             debugMsg("[TradingCards] onCommand.rare: " + rare);
             if (p.getInventory().firstEmpty() != -1) {
@@ -1532,9 +1551,9 @@ public class TradingCards
             if (name.matches("^[a-zA-Z0-9-_]+$")) {
                 if (isPlayerCard(name)) name = name.replaceAll(" ", "_");
                 ConfigurationSection rarities = getCardsData().getConfigurationSection("Cards");
-                Set < String > rarityKeys = rarities.getKeys(false);
+                Set<String> rarityKeys = rarities.getKeys(false);
                 String keyToUse = "";
-                for (String key: rarityKeys) {
+                for (String key : rarityKeys) {
                     if (key.equalsIgnoreCase(rarity)) keyToUse = key;
                 }
                 if (!keyToUse.equals("")) {
@@ -1592,7 +1611,7 @@ public class TradingCards
     }
 
     public Boolean exists(String statement) {
-        if(getDatabase("trading_cards").queryValue(statement, "ID") == null) return false;
+        if (getDatabase("trading_cards").queryValue(statement, "ID") == null) return false;
         else return true;
     }
 
@@ -1611,7 +1630,7 @@ public class TradingCards
                 String info = getCardsData().getString("Cards." + key + "." + key2 + ".Info");
                 if (getCardsData().contains("Cards." + key + "." + key2 + ".Buy-Price"))
                     cost = String.valueOf(getCardsData().getDouble("Cards." + key + "." + key2 + ".Buy-Price"));
-                if(!exists("SELECT * FROM cards WHERE rarity = '" + key + "' AND name = '" + key2 + "' AND about = '" + about + "' AND series = '" + series + "' AND type = '" + type + "' AND info = '" + info + "' AND price = '" + cost + "'")) {
+                if (!exists("SELECT * FROM cards WHERE rarity = '" + key + "' AND name = '" + key2 + "' AND about = '" + about + "' AND series = '" + series + "' AND type = '" + type + "' AND info = '" + info + "' AND price = '" + cost + "'")) {
                     if (getDatabase("trading_cards").executeStatement("INSERT INTO cards (rarity, name, about, series, type, info, price) VALUES ('" + key + "', '" + key2 + "', '" + about + "', '" + series + "', '" + type + "', '" + info + "', '" + cost + "')")) {
                         if (getConfig().getBoolean("General.Debug-Mode"))
                             System.out.println("[TradingCards] " + key + ", " + key2 + " - Added to SQLite!");
@@ -1651,8 +1670,8 @@ public class TradingCards
                             // If card in deck is a shiny
                             if (splitContents[3].equalsIgnoreCase("yes")) {
                                 if (!splitContents[0].equalsIgnoreCase("BLANK") && !splitContents[1].equalsIgnoreCase("None") && splitContents[1] != null && !splitContents[1].isEmpty()) {
-                                    if(getDatabase("trading_cards").queryValue("SELECT * FROM decks WHERE uuid = '" + key + "' AND deckID = '" + deckNum + "' AND card = '" + cardID + "' AND isShiny = 1", "ID") == null) {
-                                        if (getDatabase("trading_cards").executeStatement("INSERT INTO decks (uuid, deckID, card, isShiny, count) VALUES ('" + key + "', '" + deckNum + "', '" + cardID + "', 1, "+Integer.valueOf(splitContents[2])+")")) {
+                                    if (getDatabase("trading_cards").queryValue("SELECT * FROM decks WHERE uuid = '" + key + "' AND deckID = '" + deckNum + "' AND card = '" + cardID + "' AND isShiny = 1", "ID") == null) {
+                                        if (getDatabase("trading_cards").executeStatement("INSERT INTO decks (uuid, deckID, card, isShiny, count) VALUES ('" + key + "', '" + deckNum + "', '" + cardID + "', 1, " + Integer.valueOf(splitContents[2]) + ")")) {
                                         } else {
                                             if (getConfig().getBoolean("General.Debug-Mode"))
                                                 System.out.println("[TradingCards] Error adding shiny card to deck SQLite, check stack!");
@@ -1660,8 +1679,8 @@ public class TradingCards
                                     }
                                 }
                             } else if (!splitContents[1].equalsIgnoreCase("None") && !splitContents[0].equalsIgnoreCase("BLANK") && splitContents[1] != null && !splitContents[1].isEmpty()) {
-                                if(getDatabase("trading_cards").queryValue("SELECT * FROM decks WHERE uuid = '" + key + "' AND deckID = '" + deckNum + "' AND card = '" + cardID + "' AND isShiny = 0", "ID") == null) {
-                                    if (getDatabase("trading_cards").executeStatement("INSERT INTO decks (uuid, deckID, card, isShiny, count) VALUES ('" + key + "', '" + deckNum + "', '" + cardID + "', 0, "+Integer.valueOf(splitContents[2])+")")) {
+                                if (getDatabase("trading_cards").queryValue("SELECT * FROM decks WHERE uuid = '" + key + "' AND deckID = '" + deckNum + "' AND card = '" + cardID + "' AND isShiny = 0", "ID") == null) {
+                                    if (getDatabase("trading_cards").executeStatement("INSERT INTO decks (uuid, deckID, card, isShiny, count) VALUES ('" + key + "', '" + deckNum + "', '" + cardID + "', 0, " + Integer.valueOf(splitContents[2]) + ")")) {
                                     } else {
                                         if (getConfig().getBoolean("General.Debug-Mode"))
                                             System.out.println("[TradingCards] Error adding card to deck SQLite, check stack!");
@@ -1684,63 +1703,78 @@ public class TradingCards
                 sender.sendMessage(cMsg(formatTitle(getConfig().getString("General.Server-Name") + " Trading Cards")));
                 if (sender.hasPermission("cards.reload")) {
                     sender.sendMessage(cMsg("&7> &3" + getMessagesData().getString("Messages.ReloadUsage")));
-                    if (showUsage) sender.sendMessage(cMsg("   &7- &f&o" + getMessagesData().getString("Messages.ReloadHelp")));
+                    if (showUsage)
+                        sender.sendMessage(cMsg("   &7- &f&o" + getMessagesData().getString("Messages.ReloadHelp")));
                 }
                 if (sender.hasPermission("cards.givecard")) {
                     sender.sendMessage(cMsg("&7> &3" + getMessagesData().getString("Messages.GiveCardUsage")));
-                    if (showUsage) sender.sendMessage(cMsg("   &7- &f&o" + getMessagesData().getString("Messages.GiveCardHelp")));
+                    if (showUsage)
+                        sender.sendMessage(cMsg("   &7- &f&o" + getMessagesData().getString("Messages.GiveCardHelp")));
                 }
                 if (sender.hasPermission("cards.giveshinycard")) {
                     sender.sendMessage(cMsg("&7> &3" + getMessagesData().getString("Messages.GiveShinyCardUsage")));
-                    if (showUsage) sender.sendMessage(cMsg("   &7- &f&o" + getMessagesData().getString("Messages.GiveShinyCardHelp")));
+                    if (showUsage)
+                        sender.sendMessage(cMsg("   &7- &f&o" + getMessagesData().getString("Messages.GiveShinyCardHelp")));
                 }
                 if (sender.hasPermission("cards.giverandomcard")) {
                     sender.sendMessage(cMsg("&7> &3" + getMessagesData().getString("Messages.GiveRandomCardUsage")));
-                    if (showUsage) sender.sendMessage(cMsg("   &7- &f&o" + getMessagesData().getString("Messages.GiveRandomCardHelp")));
+                    if (showUsage)
+                        sender.sendMessage(cMsg("   &7- &f&o" + getMessagesData().getString("Messages.GiveRandomCardHelp")));
                 }
                 if (sender.hasPermission("cards.giveboosterpack")) {
                     sender.sendMessage(cMsg("&7> &3" + getMessagesData().getString("Messages.GiveBoosterPackUsage")));
-                    if (showUsage) sender.sendMessage(cMsg("   &7- &f&o" + getMessagesData().getString("Messages.GiveBoosterPackHelp")));
+                    if (showUsage)
+                        sender.sendMessage(cMsg("   &7- &f&o" + getMessagesData().getString("Messages.GiveBoosterPackHelp")));
                 }
                 if (sender.hasPermission("cards.giveaway")) {
                     sender.sendMessage(cMsg("&7> &3" + getMessagesData().getString("Messages.GiveawayUsage")));
-                    if (showUsage) sender.sendMessage(cMsg("   &7- &f&o" + getMessagesData().getString("Messages.GiveawayHelp")));
+                    if (showUsage)
+                        sender.sendMessage(cMsg("   &7- &f&o" + getMessagesData().getString("Messages.GiveawayHelp")));
                 }
                 if (sender.hasPermission("cards.getdeck")) {
                     sender.sendMessage(cMsg("&7> &3" + getMessagesData().getString("Messages.GetDeckUsage")));
-                    if (showUsage) sender.sendMessage(cMsg("   &7- &f&o" + getMessagesData().getString("Messages.GetDeckHelp")));
+                    if (showUsage)
+                        sender.sendMessage(cMsg("   &7- &f&o" + getMessagesData().getString("Messages.GetDeckHelp")));
                 }
                 if (sender.hasPermission("cards.list")) {
                     sender.sendMessage(cMsg("&7> &3" + getMessagesData().getString("Messages.ListUsage")));
-                    if (showUsage) sender.sendMessage(cMsg("   &7- &f&o" + getMessagesData().getString("Messages.ListHelp")));
+                    if (showUsage)
+                        sender.sendMessage(cMsg("   &7- &f&o" + getMessagesData().getString("Messages.ListHelp")));
                 }
                 if (sender.hasPermission("cards.listpacks")) {
                     sender.sendMessage(cMsg("&7> &3" + getMessagesData().getString("Messages.ListPacksUsage")));
-                    if (showUsage) sender.sendMessage(cMsg("   &7- &f&o" + getMessagesData().getString("Messages.ListPacksHelp")));
+                    if (showUsage)
+                        sender.sendMessage(cMsg("   &7- &f&o" + getMessagesData().getString("Messages.ListPacksHelp")));
                 }
                 if (sender.hasPermission("cards.toggle")) {
                     sender.sendMessage(cMsg("&7> &3" + getMessagesData().getString("Messages.ToggleUsage")));
-                    if (showUsage) sender.sendMessage(cMsg("   &7- &f&o" + getMessagesData().getString("Messages.ToggleHelp")));
+                    if (showUsage)
+                        sender.sendMessage(cMsg("   &7- &f&o" + getMessagesData().getString("Messages.ToggleHelp")));
                 }
                 if (sender.hasPermission("cards.create")) {
                     sender.sendMessage(cMsg("&7> &3" + getMessagesData().getString("Messages.CreateUsage")));
-                    if (showUsage) sender.sendMessage(cMsg("   &7- &f&o" + getMessagesData().getString("Messages.CreateHelp")));
+                    if (showUsage)
+                        sender.sendMessage(cMsg("   &7- &f&o" + getMessagesData().getString("Messages.CreateHelp")));
                 }
                 if (sender.hasPermission("cards.buy") && this.hasVault) {
                     sender.sendMessage(cMsg("&7> &3" + getMessagesData().getString("Messages.BuyUsage")));
-                    if (showUsage) sender.sendMessage(cMsg("   &7- &f&o" + getMessagesData().getString("Messages.BuyHelp")));
+                    if (showUsage)
+                        sender.sendMessage(cMsg("   &7- &f&o" + getMessagesData().getString("Messages.BuyHelp")));
                 }
                 if (sender.hasPermission("cards.worth") && this.hasVault) {
                     sender.sendMessage(cMsg("&7> &3" + getMessagesData().getString("Messages.WorthUsage")));
-                    if (showUsage) sender.sendMessage(cMsg("   &7- &f&o" + getMessagesData().getString("Messages.WorthHelp")));
+                    if (showUsage)
+                        sender.sendMessage(cMsg("   &7- &f&o" + getMessagesData().getString("Messages.WorthHelp")));
                 }
                 if (sender.hasPermission("cards.resolve")) {
                     sender.sendMessage(cMsg("&7> &3" + getMessagesData().getString("Messages.ResolveUsage")));
-                    if (showUsage) sender.sendMessage(cMsg("   &7- &f&o" + getMessagesData().getString("Messages.ResolveHelp")));
+                    if (showUsage)
+                        sender.sendMessage(cMsg("   &7- &f&o" + getMessagesData().getString("Messages.ResolveHelp")));
                 }
                 if (sender.hasPermission("cards.reward")) {
                     sender.sendMessage(cMsg("&7> &3" + getMessagesData().getString("Messages.RewardUsage")));
-                    if (showUsage) sender.sendMessage(cMsg("   &7- &f&o" + getMessagesData().getString("Messages.RewardHelp")));
+                    if (showUsage)
+                        sender.sendMessage(cMsg("   &7- &f&o" + getMessagesData().getString("Messages.RewardHelp")));
                 }
                 return true;
             }
@@ -1917,12 +1951,14 @@ public class TradingCards
                                     sender.sendMessage(cMsg(getMessagesData().getString("Messages.Prefix") + " " + getMessagesData().getString("Messages.GiveRandomCardMsg").replaceAll("%player%", p2.getName())));
                                     if (p2.getInventory().firstEmpty() != -1) {
                                         p2.sendMessage(cMsg(getMessagesData().getString("Messages.Prefix") + " " + getMessagesData().getString("Messages.GiveRandomCard")));
-                                        if (generateCard(rare, false) != null) p2.getInventory().addItem(generateCard(rare, false));
+                                        if (generateCard(rare, false) != null)
+                                            p2.getInventory().addItem(generateCard(rare, false));
                                     } else {
                                         World curWorld2 = p2.getWorld();
                                         if (p2.getGameMode() == GameMode.SURVIVAL) {
                                             p2.sendMessage(cMsg(getMessagesData().getString("Messages.Prefix") + " " + getMessagesData().getString("Messages.GiveRandomCard")));
-                                            if (generateCard(rare, false) != null) curWorld2.dropItem(p2.getLocation(), generateCard(rare, false));
+                                            if (generateCard(rare, false) != null)
+                                                curWorld2.dropItem(p2.getLocation(), generateCard(rare, false));
 
                                         }
 
@@ -1930,7 +1966,7 @@ public class TradingCards
                                 } else {
                                     sender.sendMessage(cMsg(getMessagesData().getString("Messages.Prefix") + " " + getMessagesData().getString("Messages.NoEntity")));
                                 }
-                            } catch(IllegalArgumentException e) {
+                            } catch (IllegalArgumentException e) {
                                 sender.sendMessage(cMsg(getMessagesData().getString("Messages.Prefix") + " " + getMessagesData().getString("Messages.NoEntity")));
                             }
                         } else {
@@ -1952,16 +1988,16 @@ public class TradingCards
                                 if (online2) {
                                     Player p3 = Bukkit.getPlayer(args[1]);
                                     ConfigurationSection cards = getCardsData().getConfigurationSection("Cards");
-                                    Set < String > cardKeys = cards.getKeys(false);
+                                    Set<String> cardKeys = cards.getKeys(false);
                                     String msg = "";
                                     int i = 0;
                                     int numCardsCounter = 0;
                                     String finalMsg = "";
                                     sender.sendMessage(cMsg("&e&l------- &7(&6&l" + p3.getName() + "'s Collection&7)&e&l -------"));
-                                    for (String key: cardKeys) {
+                                    for (String key : cardKeys) {
                                         ConfigurationSection cardsWithKey = getCardsData().getConfigurationSection("Cards." + key);
-                                        Set < String > keyKeys = cardsWithKey.getKeys(false);
-                                        for (String key2: keyKeys) {
+                                        Set<String> keyKeys = cardsWithKey.getKeys(false);
+                                        for (String key2 : keyKeys) {
                                             if (i > 32) {
                                                 if (hasCard(p3, key2, key) > 0) numCardsCounter++;
                                                 finalMsg = msg + "&7and more!";
@@ -2007,13 +2043,13 @@ public class TradingCards
                             }
                         } else {
                             ConfigurationSection cards2 = getCardsData().getConfigurationSection("Cards." + isRarity(args[1]));
-                            Set < String > cardKeys2 = cards2.getKeys(false);
+                            Set<String> cardKeys2 = cards2.getKeys(false);
                             String msg2 = "";
                             int j = 0;
                             int numCardsCounter2 = 0;
                             Player p4 = (Player) sender;
                             String finalMsg2 = "";
-                            for (String thisKey: cardKeys2) {
+                            for (String thisKey : cardKeys2) {
                                 if (j > 100) {
                                     if (hasCard(p4, thisKey, isRarity(args[1])) > 0) numCardsCounter2++;
                                     finalMsg2 = msg2 + "&7and more!";
@@ -2052,17 +2088,17 @@ public class TradingCards
                         }
                     } else {
                         ConfigurationSection cards2 = getCardsData().getConfigurationSection("Cards");
-                        Set < String > cardKeys2 = cards2.getKeys(false);
+                        Set<String> cardKeys2 = cards2.getKeys(false);
                         String msg2 = "";
                         int j = 0;
                         int numCardsCounter2 = 0;
                         Player p4 = (Player) sender;
                         String finalMsg2 = "";
-                        for (String key: cardKeys2) {
+                        for (String key : cardKeys2) {
                             String thisKey = key;
                             ConfigurationSection cardsWithKey = getCardsData().getConfigurationSection("Cards." + thisKey);
-                            Set < String > keyKeys = cardsWithKey.getKeys(false);
-                            for (String key2: keyKeys) {
+                            Set<String> keyKeys = cardsWithKey.getKeys(false);
+                            for (String key2 : keyKeys) {
                                 if (j > 32) {
                                     if (hasCard(p4, key2, key) > 0) numCardsCounter2++;
                                     finalMsg2 = msg2 + "&7and more!";
@@ -2105,167 +2141,213 @@ public class TradingCards
                     sender.sendMessage(cMsg(getMessagesData().getString("Messages.Prefix") + " " + getMessagesData().getString("Messages.NoPerms")));
                 }
             } else if (args[0].equalsIgnoreCase("listpacks")) {
-                    if (sender.hasPermission("cards.listpacks")) {
-                        ConfigurationSection cards3 = getConfig().getConfigurationSection("BoosterPacks");
-                        Set < String > cardKeys3 = cards3.getKeys(false);
-                        int k = 0;
-                        sender.sendMessage(cMsg("&6--- Booster Packs ---"));
-                        boolean hasPrice = false;
-                        boolean hasExtra = false;
-                        for (String key: cardKeys3) {
-                            if (getConfig().getBoolean("PluginSupport.Vault.Vault-Enabled") && getConfig().contains("BoosterPacks." + key + ".Price") && getConfig().getDouble("BoosterPacks." + key + ".Price") > 0.0D) hasPrice = true;
-                            if (getConfig().contains("BoosterPacks." + key + ".ExtraCardRarity") && getConfig().contains("BoosterPacks." + key + ".NumExtraCards")) hasExtra = true;
-                            k++;
-                            if (hasPrice) {
-                                sender.sendMessage(cMsg("&6" + k + ") &e" + key + " &7(&aPrice: " + getConfig().getDouble("BoosterPacks." + key + ".Price") + "&7)"));
-                            } else {
-                                sender.sendMessage(cMsg("&6" + k + ") &e" + key));
-
-                            }
-                            if (hasExtra) {
-                                sender.sendMessage(cMsg("  &7- &f&o" + getConfig().getInt("BoosterPacks." + key + ".NumNormalCards") + " " + getConfig().getString("BoosterPacks." + key + ".NormalCardRarity") + ", " + getConfig().getInt("BoosterPacks." + key + ".NumExtraCards") + " " + getConfig().getString("BoosterPacks." + key + ".ExtraCardRarity") + ", " + getConfig().getInt("BoosterPacks." + key + ".NumSpecialCards") + " " + getConfig().getString("BoosterPacks." + key + ".SpecialCardRarity")));
-                            } else {
-                                sender.sendMessage(cMsg("  &7- &f&o" + getConfig().getInt("BoosterPacks." + key + ".NumNormalCards") + " " + getConfig().getString("BoosterPacks." + key + ".NormalCardRarity") + ", " + getConfig().getInt("BoosterPacks." + key + ".NumSpecialCards") + " " + getConfig().getString("BoosterPacks." + key + ".SpecialCardRarity")));
-                            }
-                            hasPrice = false;
-                            hasExtra = false;
-                        }
-                    } else {
-                        sender.sendMessage(cMsg(getMessagesData().getString("Messages.Prefix") + " " + getMessagesData().getString("Messages.NoPerms")));
-                    }
-                } else if (args[0].equalsIgnoreCase("reward")) {
-                    if (sender.hasPermission("cards.reward")) {
-                        if (getConfig().getBoolean("General.Allow-Rewards")) {
-                            if (args.length > 1) {
-                                if (!isRarity(args[1]).equalsIgnoreCase("None")) {
-                                    if (completedRarity((Player) sender, isRarity(args[1]))) {
-                                        if (getConfig().contains("Rarities." + isRarity(args[1]) + ".RewardCmd1") && !getConfig().getString("Rarities." + isRarity(args[1]) + ".RewardCmd1").equalsIgnoreCase("None")) getServer().dispatchCommand(getServer().getConsoleSender(), getConfig().getString("Rarities." + isRarity(args[1]) + ".RewardCmd1").replaceAll("%player%", sender.getName()));
-                                        if (getConfig().contains("Rarities." + isRarity(args[1]) + ".RewardCmd2") && !getConfig().getString("Rarities." + isRarity(args[1]) + ".RewardCmd2").equalsIgnoreCase("None")) getServer().dispatchCommand(getServer().getConsoleSender(), getConfig().getString("Rarities." + isRarity(args[1]) + ".RewardCmd2").replaceAll("%player%", sender.getName()));
-                                        if (getConfig().contains("Rarities." + isRarity(args[1]) + ".RewardCmd3") && !getConfig().getString("Rarities." + isRarity(args[1]) + ".RewardCmd3").equalsIgnoreCase("None")) getServer().dispatchCommand(getServer().getConsoleSender(), getConfig().getString("Rarities." + isRarity(args[1]) + ".RewardCmd3").replaceAll("%player%", sender.getName()));
-                                        if (getConfig().getBoolean("General.Reward-Broadcast")) Bukkit.broadcastMessage(cMsg(getMessagesData().getString("Messages.Prefix") + " " + getMessagesData().getString("Messages.RewardBroadcast").replaceAll("%player%", sender.getName()).replaceAll("%rarity%", isRarity(args[1]))));
-                                        if (!deleteRarity((Player) sender, isRarity(args[1])) && getConfig().getBoolean("General.Debug-Mode")) System.out.println("Cannot delete rarity: " + isRarity(args[1]));
-                                    } else if (getConfig().getBoolean("General.Eat-Shiny-Cards")) {
-                                        sender.sendMessage(cMsg(getMessagesData().getString("Messages.Prefix") + " " + getMessagesData().getString("Messages.RewardError2")));
-                                    } else {
-                                        sender.sendMessage(cMsg(getMessagesData().getString("Messages.Prefix") + " " + getMessagesData().getString("Messages.RewardError3").replaceAll("%shinyName%", getConfig().getString("General.Shiny-Name"))));
-                                    }
-                                } else {
-                                    sender.sendMessage(cMsg(getMessagesData().getString("Messages.Prefix") + " " + getMessagesData().getString("Messages.RewardError")));
-                                }
-                            } else {
-                                sender.sendMessage(cMsg(getMessagesData().getString("Messages.Prefix") + " " + getMessagesData().getString("Messages.RewardUsage")));
-                            }
+                if (sender.hasPermission("cards.listpacks")) {
+                    ConfigurationSection cards3 = getConfig().getConfigurationSection("BoosterPacks");
+                    Set<String> cardKeys3 = cards3.getKeys(false);
+                    int k = 0;
+                    sender.sendMessage(cMsg("&6--- Booster Packs ---"));
+                    boolean hasPrice = false;
+                    boolean hasExtra = false;
+                    for (String key : cardKeys3) {
+                        if (getConfig().getBoolean("PluginSupport.Vault.Vault-Enabled") && getConfig().contains("BoosterPacks." + key + ".Price") && getConfig().getDouble("BoosterPacks." + key + ".Price") > 0.0D)
+                            hasPrice = true;
+                        if (getConfig().contains("BoosterPacks." + key + ".ExtraCardRarity") && getConfig().contains("BoosterPacks." + key + ".NumExtraCards"))
+                            hasExtra = true;
+                        k++;
+                        if (hasPrice) {
+                            sender.sendMessage(cMsg("&6" + k + ") &e" + key + " &7(&aPrice: " + getConfig().getDouble("BoosterPacks." + key + ".Price") + "&7)"));
                         } else {
-                            sender.sendMessage(cMsg(getMessagesData().getString("Messages.Prefix") + " " + getMessagesData().getString("Messages.RewardDisabled")));
+                            sender.sendMessage(cMsg("&6" + k + ") &e" + key));
+
                         }
-                    } else {
-                        sender.sendMessage(cMsg(getMessagesData().getString("Messages.Prefix") + " " + getMessagesData().getString("Messages.NoPerms")));
+                        if (hasExtra) {
+                            sender.sendMessage(cMsg("  &7- &f&o" + getConfig().getInt("BoosterPacks." + key + ".NumNormalCards") + " " + getConfig().getString("BoosterPacks." + key + ".NormalCardRarity") + ", " + getConfig().getInt("BoosterPacks." + key + ".NumExtraCards") + " " + getConfig().getString("BoosterPacks." + key + ".ExtraCardRarity") + ", " + getConfig().getInt("BoosterPacks." + key + ".NumSpecialCards") + " " + getConfig().getString("BoosterPacks." + key + ".SpecialCardRarity")));
+                        } else {
+                            sender.sendMessage(cMsg("  &7- &f&o" + getConfig().getInt("BoosterPacks." + key + ".NumNormalCards") + " " + getConfig().getString("BoosterPacks." + key + ".NormalCardRarity") + ", " + getConfig().getInt("BoosterPacks." + key + ".NumSpecialCards") + " " + getConfig().getString("BoosterPacks." + key + ".SpecialCardRarity")));
+                        }
+                        hasPrice = false;
+                        hasExtra = false;
                     }
-                } else if (args[0].equalsIgnoreCase("giveaway")) {
-                    if (sender.hasPermission("cards.giveaway")) {
+                } else {
+                    sender.sendMessage(cMsg(getMessagesData().getString("Messages.Prefix") + " " + getMessagesData().getString("Messages.NoPerms")));
+                }
+            } else if (args[0].equalsIgnoreCase("reward")) {
+                if (sender.hasPermission("cards.reward")) {
+                    if (getConfig().getBoolean("General.Allow-Rewards")) {
                         if (args.length > 1) {
-                            ConfigurationSection rarities = getCardsData().getConfigurationSection("Cards");
-                            Set < String > rarityKeys = rarities.getKeys(false);
-                            String keyToUse = "";
-                            if (isMob(args[1])) {
-                                if (sender instanceof org.bukkit.command.ConsoleCommandSender) {
-                                    giveawayNatural(EntityType.valueOf(args[1].toUpperCase()), null);
+                            if (!isRarity(args[1]).equalsIgnoreCase("None")) {
+                                if (completedRarity((Player) sender, isRarity(args[1]))) {
+                                    if (getConfig().contains("Rarities." + isRarity(args[1]) + ".RewardCmd1") && !getConfig().getString("Rarities." + isRarity(args[1]) + ".RewardCmd1").equalsIgnoreCase("None"))
+                                        getServer().dispatchCommand(getServer().getConsoleSender(), getConfig().getString("Rarities." + isRarity(args[1]) + ".RewardCmd1").replaceAll("%player%", sender.getName()));
+                                    if (getConfig().contains("Rarities." + isRarity(args[1]) + ".RewardCmd2") && !getConfig().getString("Rarities." + isRarity(args[1]) + ".RewardCmd2").equalsIgnoreCase("None"))
+                                        getServer().dispatchCommand(getServer().getConsoleSender(), getConfig().getString("Rarities." + isRarity(args[1]) + ".RewardCmd2").replaceAll("%player%", sender.getName()));
+                                    if (getConfig().contains("Rarities." + isRarity(args[1]) + ".RewardCmd3") && !getConfig().getString("Rarities." + isRarity(args[1]) + ".RewardCmd3").equalsIgnoreCase("None"))
+                                        getServer().dispatchCommand(getServer().getConsoleSender(), getConfig().getString("Rarities." + isRarity(args[1]) + ".RewardCmd3").replaceAll("%player%", sender.getName()));
+                                    if (getConfig().getBoolean("General.Reward-Broadcast"))
+                                        Bukkit.broadcastMessage(cMsg(getMessagesData().getString("Messages.Prefix") + " " + getMessagesData().getString("Messages.RewardBroadcast").replaceAll("%player%", sender.getName()).replaceAll("%rarity%", isRarity(args[1]))));
+                                    if (!deleteRarity((Player) sender, isRarity(args[1])) && getConfig().getBoolean("General.Debug-Mode"))
+                                        System.out.println("Cannot delete rarity: " + isRarity(args[1]));
+                                } else if (getConfig().getBoolean("General.Eat-Shiny-Cards")) {
+                                    sender.sendMessage(cMsg(getMessagesData().getString("Messages.Prefix") + " " + getMessagesData().getString("Messages.RewardError2")));
                                 } else {
-                                    giveawayNatural(EntityType.valueOf(args[1].toUpperCase()), (Player) sender);
+                                    sender.sendMessage(cMsg(getMessagesData().getString("Messages.Prefix") + " " + getMessagesData().getString("Messages.RewardError3").replaceAll("%shinyName%", getConfig().getString("General.Shiny-Name"))));
                                 }
                             } else {
-                                for (String thisKey4: rarityKeys) {
-                                    if (thisKey4.equalsIgnoreCase(args[1].replaceAll("_", " "))) keyToUse = thisKey4;
+                                sender.sendMessage(cMsg(getMessagesData().getString("Messages.Prefix") + " " + getMessagesData().getString("Messages.RewardError")));
+                            }
+                        } else {
+                            sender.sendMessage(cMsg(getMessagesData().getString("Messages.Prefix") + " " + getMessagesData().getString("Messages.RewardUsage")));
+                        }
+                    } else {
+                        sender.sendMessage(cMsg(getMessagesData().getString("Messages.Prefix") + " " + getMessagesData().getString("Messages.RewardDisabled")));
+                    }
+                } else {
+                    sender.sendMessage(cMsg(getMessagesData().getString("Messages.Prefix") + " " + getMessagesData().getString("Messages.NoPerms")));
+                }
+            } else if (args[0].equalsIgnoreCase("giveaway")) {
+                if (sender.hasPermission("cards.giveaway")) {
+                    if (args.length > 1) {
+                        ConfigurationSection rarities = getCardsData().getConfigurationSection("Cards");
+                        Set<String> rarityKeys = rarities.getKeys(false);
+                        String keyToUse = "";
+                        if (isMob(args[1])) {
+                            if (sender instanceof org.bukkit.command.ConsoleCommandSender) {
+                                giveawayNatural(EntityType.valueOf(args[1].toUpperCase()), null);
+                            } else {
+                                giveawayNatural(EntityType.valueOf(args[1].toUpperCase()), (Player) sender);
+                            }
+                        } else {
+                            for (String thisKey4 : rarityKeys) {
+                                if (thisKey4.equalsIgnoreCase(args[1].replaceAll("_", " "))) keyToUse = thisKey4;
+                            }
+                            if (!keyToUse.equals("")) {
+                                Bukkit.broadcastMessage(cMsg(getMessagesData().getString("Messages.Prefix") + " " + getMessagesData().getString("Messages.Giveaway").replaceAll("%player%", sender.getName()).replaceAll("%rarity%", keyToUse)));
+                                for (Player p5 : Bukkit.getOnlinePlayers()) {
+                                    ConfigurationSection cards4 = getCardsData().getConfigurationSection("Cards." + keyToUse);
+                                    Set<String> cardKeys4 = cards4.getKeys(false);
+                                    int rIndex = this.r.nextInt(cardKeys4.size());
+                                    int l = 0;
+                                    String cardName = "";
+                                    for (String theCardName : cardKeys4) {
+                                        if (l == rIndex) {
+                                            cardName = theCardName;
+                                            break;
+
+                                        }
+                                        l++;
+
+                                    }
+                                    if (p5.getInventory().firstEmpty() != -1) {
+                                        p5.getInventory().addItem(createPlayerCard(cardName, keyToUse, Integer.valueOf(1), false));
+                                        continue;
+                                    }
+                                    World curWorld3 = p5.getWorld();
+                                    if (p5.getGameMode() != GameMode.SURVIVAL) continue;
+                                    curWorld3.dropItem(p5.getLocation(), createPlayerCard(cardName, keyToUse, Integer.valueOf(1), false));
                                 }
-                                if (!keyToUse.equals("")) {
-                                    Bukkit.broadcastMessage(cMsg(getMessagesData().getString("Messages.Prefix") + " " + getMessagesData().getString("Messages.Giveaway").replaceAll("%player%", sender.getName()).replaceAll("%rarity%", keyToUse)));
-                                    for (Player p5: Bukkit.getOnlinePlayers()) {
-                                        ConfigurationSection cards4 = getCardsData().getConfigurationSection("Cards." + keyToUse);
-                                        Set < String > cardKeys4 = cards4.getKeys(false);
-                                        int rIndex = this.r.nextInt(cardKeys4.size());
-                                        int l = 0;
-                                        String cardName = "";
-                                        for (String theCardName: cardKeys4) {
-                                            if (l == rIndex) {
-                                                cardName = theCardName;
-                                                break;
+                            } else {
+                                sender.sendMessage(cMsg(getMessagesData().getString("Messages.Prefix") + " " + getMessagesData().getString("Messages.NoRarity")));
+                            }
 
+                        }
+                    } else {
+                        sender.sendMessage(cMsg(getMessagesData().getString("Messages.Prefix") + " " + getMessagesData().getString("Messages.GiveawayUsage")));
+                    }
+                } else {
+                    sender.sendMessage(cMsg(getMessagesData().getString("Messages.Prefix") + " " + getMessagesData().getString("Messages.NoPerms")));
+                }
+            } else if (args[0].equalsIgnoreCase("worth")) {
+                if (sender.hasPermission("cards.worth")) {
+                    if (this.hasVault) {
+                        Player p = (Player) sender;
+                        if (p.getInventory().getItemInMainHand().getType() == Material.valueOf(getConfig().getString("General.Card-Material"))) {
+                            ItemStack itemInHand = p.getInventory().getItemInMainHand();
+                            String itemName = itemInHand.getItemMeta().getDisplayName();
+                            debugMsg(itemName);
+                            debugMsg(ChatColor.stripColor(itemName));
+                            String[] splitName = ChatColor.stripColor(itemName).split(" ");
+                            String cardName2 = "";
+                            if (splitName.length > 1) {
+                                cardName2 = splitName[1];
+
+                            } else {
+                                cardName2 = splitName[0];
+                            }
+                            debugMsg(cardName2);
+                            List<String> lore = itemInHand.getItemMeta().getLore();
+                            String rarity = ChatColor.stripColor(lore.get(3));
+                            debugMsg(rarity);
+                            boolean canBuy = false;
+                            double buyPrice = 0.0D;
+                            if (getCardsData().contains("Cards." + rarity + "." + cardName2 + ".Buy-Price")) {
+                                buyPrice = getCardsData().getDouble("Cards." + rarity + "." + cardName2 + ".Buy-Price");
+                                if (buyPrice > 0.0D) canBuy = true;
+                            }
+                            if (canBuy) {
+                                sender.sendMessage(cMsg(getMessagesData().getString("Messages.Prefix") + " " + getMessagesData().getString("Messages.CanBuy").replaceAll("%buyAmount%", String.valueOf(buyPrice))));
+                            } else if (!canBuy) {
+                                sender.sendMessage(cMsg(getMessagesData().getString("Messages.Prefix") + " " + getMessagesData().getString("Messages.CanNotBuy")));
+                            }
+                        } else {
+                            sender.sendMessage(cMsg(getMessagesData().getString("Messages.Prefix") + " " + getMessagesData().getString("Messages.NotACard")));
+                        }
+                    } else {
+                        sender.sendMessage(cMsg(getMessagesData().getString("Messages.Prefix") + " " + getMessagesData().getString("Messages.NoVault")));
+                    }
+                } else {
+                    sender.sendMessage(cMsg(getMessagesData().getString("Messages.Prefix") + " " + getMessagesData().getString("Messages.NoPerms")));
+                }
+            } else if (args[0].equalsIgnoreCase("buy")) {
+                if (sender.hasPermission("cards.buy")) {
+                    if (this.hasVault) {
+                        Player p = (Player) sender;
+                        if (args.length > 1) {
+                            if (args[1].equalsIgnoreCase("pack")) {
+                                if (args.length > 2) {
+                                    if (getConfig().contains("BoosterPacks." + args[2])) {
+                                        double buyPrice2 = 0.0D;
+                                        boolean canBuy2 = false;
+                                        if (getConfig().contains("BoosterPacks." + args[2] + ".Price")) {
+                                            buyPrice2 = getConfig().getDouble("BoosterPacks." + args[2] + ".Price");
+                                            if (buyPrice2 > 0.0D) canBuy2 = true;
+                                        }
+                                        if (canBuy2) {
+                                            if (econ.getBalance(p) >= buyPrice2) {
+                                                if (getConfig().getBoolean("PluginSupport.Vault.Closed-Economy")) {
+                                                    econ.withdrawPlayer(p, buyPrice2);
+                                                    econ.depositPlayer(p, getConfig().getString("PluginSupport.Vault.Server-Account"), buyPrice2);
+                                                } else {
+                                                    econ.withdrawPlayer(p, buyPrice2);
+                                                }
+                                                if (p.getInventory().firstEmpty() != -1) {
+                                                    p.getInventory().addItem(createBoosterPack(args[2]));
+
+                                                } else {
+                                                    World curWorld4 = p.getWorld();
+                                                    if (p.getGameMode() == GameMode.SURVIVAL)
+                                                        curWorld4.dropItem(p.getLocation(), createBoosterPack(args[2]));
+                                                }
+                                                sender.sendMessage(cMsg(getMessagesData().getString("Messages.Prefix") + " " + getMessagesData().getString("Messages.BoughtCard").replaceAll("%amount%", String.valueOf(buyPrice2))));
+                                            } else {
+                                                sender.sendMessage(cMsg(getMessagesData().getString("Messages.Prefix") + " " + getMessagesData().getString("Messages.NotEnoughMoney")));
                                             }
-                                            l++;
-
+                                        } else {
+                                            sender.sendMessage(cMsg(getMessagesData().getString("Messages.Prefix") + " " + getMessagesData().getString("Messages.CannotBeBought")));
                                         }
-                                        if (p5.getInventory().firstEmpty() != -1) {
-                                            p5.getInventory().addItem(createPlayerCard(cardName, keyToUse, Integer.valueOf(1), false));
-                                            continue;
-                                        }
-                                        World curWorld3 = p5.getWorld();
-                                        if (p5.getGameMode() != GameMode.SURVIVAL) continue;
-                                        curWorld3.dropItem(p5.getLocation(), createPlayerCard(cardName, keyToUse, Integer.valueOf(1), false));
+                                    } else {
+                                        sender.sendMessage(cMsg(getMessagesData().getString("Messages.Prefix") + " " + getMessagesData().getString("Messages.PackDoesntExist")));
                                     }
                                 } else {
-                                    sender.sendMessage(cMsg(getMessagesData().getString("Messages.Prefix") + " " + getMessagesData().getString("Messages.NoRarity")));
+                                    sender.sendMessage(cMsg(getMessagesData().getString("Messages.Prefix") + " " + getMessagesData().getString("Messages.ChoosePack")));
                                 }
-
-                            }
-                        } else {
-                            sender.sendMessage(cMsg(getMessagesData().getString("Messages.Prefix") + " " + getMessagesData().getString("Messages.GiveawayUsage")));
-                        }
-                    } else {
-                        sender.sendMessage(cMsg(getMessagesData().getString("Messages.Prefix") + " " + getMessagesData().getString("Messages.NoPerms")));
-                    }
-                } else if (args[0].equalsIgnoreCase("worth")) {
-                    if (sender.hasPermission("cards.worth")) {
-                        if (this.hasVault) {
-                            Player p = (Player) sender;
-                            if (p.getInventory().getItemInMainHand().getType() == Material.valueOf(getConfig().getString("General.Card-Material"))) {
-                                ItemStack itemInHand = p.getInventory().getItemInMainHand();
-                                String itemName = itemInHand.getItemMeta().getDisplayName();
-                                debugMsg(itemName);
-                                debugMsg(ChatColor.stripColor(itemName));
-                                String[] splitName = ChatColor.stripColor(itemName).split(" ");
-                                String cardName2 = "";
-                                if (splitName.length > 1) {
-                                    cardName2 = splitName[1];
-
-                                } else {
-                                    cardName2 = splitName[0];
-                                }
-                                debugMsg(cardName2);
-                                List < String > lore = itemInHand.getItemMeta().getLore();
-                                String rarity = ChatColor.stripColor(lore.get(3));
-                                debugMsg(rarity);
-                                boolean canBuy = false;
-                                double buyPrice = 0.0D;
-                                if (getCardsData().contains("Cards." + rarity + "." + cardName2 + ".Buy-Price")) {
-                                    buyPrice = getCardsData().getDouble("Cards." + rarity + "." + cardName2 + ".Buy-Price");
-                                    if (buyPrice > 0.0D) canBuy = true;
-                                }
-                                if (canBuy) {
-                                    sender.sendMessage(cMsg(getMessagesData().getString("Messages.Prefix") + " " + getMessagesData().getString("Messages.CanBuy").replaceAll("%buyAmount%", String.valueOf(buyPrice))));
-                                } else if (!canBuy) {
-                                    sender.sendMessage(cMsg(getMessagesData().getString("Messages.Prefix") + " " + getMessagesData().getString("Messages.CanNotBuy")));
-                                }
-                            } else {
-                                sender.sendMessage(cMsg(getMessagesData().getString("Messages.Prefix") + " " + getMessagesData().getString("Messages.NotACard")));
-                            }
-                        } else {
-                            sender.sendMessage(cMsg(getMessagesData().getString("Messages.Prefix") + " " + getMessagesData().getString("Messages.NoVault")));
-                        }
-                    } else {
-                        sender.sendMessage(cMsg(getMessagesData().getString("Messages.Prefix") + " " + getMessagesData().getString("Messages.NoPerms")));
-                    }
-                } else if (args[0].equalsIgnoreCase("buy")) {
-                    if (sender.hasPermission("cards.buy")) {
-                        if (this.hasVault) {
-                            Player p = (Player) sender;
-                            if (args.length > 1) {
-                                if (args[1].equalsIgnoreCase("pack")) {
-                                    if (args.length > 2) {
-                                        if (getConfig().contains("BoosterPacks." + args[2])) {
+                            } else if (args[1].equalsIgnoreCase("card")) {
+                                if (args.length > 2) {
+                                    if (args.length > 3) {
+                                        if (getCardsData().contains("Cards." + args[2] + "." + args[3])) {
                                             double buyPrice2 = 0.0D;
                                             boolean canBuy2 = false;
-                                            if (getConfig().contains("BoosterPacks." + args[2] + ".Price")) {
-                                                buyPrice2 = getConfig().getDouble("BoosterPacks." + args[2] + ".Price");
+                                            if (getCardsData().contains("Cards." + args[2] + "." + args[3] + ".Buy-Price")) {
+                                                buyPrice2 = getCardsData().getDouble("Cards." + args[2] + "." + args[3] + ".Buy-Price");
                                                 if (buyPrice2 > 0.0D) canBuy2 = true;
                                             }
                                             if (canBuy2) {
@@ -2277,11 +2359,12 @@ public class TradingCards
                                                         econ.withdrawPlayer(p, buyPrice2);
                                                     }
                                                     if (p.getInventory().firstEmpty() != -1) {
-                                                        p.getInventory().addItem(createBoosterPack(args[2]));
+                                                        p.getInventory().addItem(createPlayerCard(args[3], args[2], Integer.valueOf(1), false));
 
                                                     } else {
                                                         World curWorld4 = p.getWorld();
-                                                        if (p.getGameMode() == GameMode.SURVIVAL) curWorld4.dropItem(p.getLocation(), createBoosterPack(args[2]));
+                                                        if (p.getGameMode() == GameMode.SURVIVAL)
+                                                            curWorld4.dropItem(p.getLocation(), createPlayerCard(args[3], args[2], Integer.valueOf(1), false));
                                                     }
                                                     sender.sendMessage(cMsg(getMessagesData().getString("Messages.Prefix") + " " + getMessagesData().getString("Messages.BoughtCard").replaceAll("%amount%", String.valueOf(buyPrice2))));
                                                 } else {
@@ -2291,79 +2374,41 @@ public class TradingCards
                                                 sender.sendMessage(cMsg(getMessagesData().getString("Messages.Prefix") + " " + getMessagesData().getString("Messages.CannotBeBought")));
                                             }
                                         } else {
-                                            sender.sendMessage(cMsg(getMessagesData().getString("Messages.Prefix") + " " + getMessagesData().getString("Messages.PackDoesntExist")));
+                                            sender.sendMessage(cMsg(getMessagesData().getString("Messages.Prefix") + " " + getMessagesData().getString("Messages.CardDoesntExist")));
                                         }
                                     } else {
-                                        sender.sendMessage(cMsg(getMessagesData().getString("Messages.Prefix") + " " + getMessagesData().getString("Messages.ChoosePack")));
-                                    }
-                                } else if (args[1].equalsIgnoreCase("card")) {
-                                    if (args.length > 2) {
-                                        if (args.length > 3) {
-                                            if (getCardsData().contains("Cards." + args[2] + "." + args[3])) {
-                                                double buyPrice2 = 0.0D;
-                                                boolean canBuy2 = false;
-                                                if (getCardsData().contains("Cards." + args[2] + "." + args[3] + ".Buy-Price")) {
-                                                    buyPrice2 = getCardsData().getDouble("Cards." + args[2] + "." + args[3] + ".Buy-Price");
-                                                    if (buyPrice2 > 0.0D) canBuy2 = true;
-                                                }
-                                                if (canBuy2) {
-                                                    if (econ.getBalance(p) >= buyPrice2) {
-                                                        if (getConfig().getBoolean("PluginSupport.Vault.Closed-Economy")) {
-                                                            econ.withdrawPlayer(p, buyPrice2);
-                                                            econ.depositPlayer(p, getConfig().getString("PluginSupport.Vault.Server-Account"), buyPrice2);
-                                                        } else {
-                                                            econ.withdrawPlayer(p, buyPrice2);
-                                                        }
-                                                        if (p.getInventory().firstEmpty() != -1) {
-                                                            p.getInventory().addItem(createPlayerCard(args[3], args[2], Integer.valueOf(1), false));
-
-                                                        } else {
-                                                            World curWorld4 = p.getWorld();
-                                                            if (p.getGameMode() == GameMode.SURVIVAL) curWorld4.dropItem(p.getLocation(), createPlayerCard(args[3], args[2], Integer.valueOf(1), false));
-                                                        }
-                                                        sender.sendMessage(cMsg(getMessagesData().getString("Messages.Prefix") + " " + getMessagesData().getString("Messages.BoughtCard").replaceAll("%amount%", String.valueOf(buyPrice2))));
-                                                    } else {
-                                                        sender.sendMessage(cMsg(getMessagesData().getString("Messages.Prefix") + " " + getMessagesData().getString("Messages.NotEnoughMoney")));
-                                                    }
-                                                } else {
-                                                    sender.sendMessage(cMsg(getMessagesData().getString("Messages.Prefix") + " " + getMessagesData().getString("Messages.CannotBeBought")));
-                                                }
-                                            } else {
-                                                sender.sendMessage(cMsg(getMessagesData().getString("Messages.Prefix") + " " + getMessagesData().getString("Messages.CardDoesntExist")));
-                                            }
-                                        } else {
-                                            sender.sendMessage(cMsg(getMessagesData().getString("Messages.Prefix") + " " + getMessagesData().getString("Messages.ChooseCard")));
-                                        }
-                                    } else {
-                                        sender.sendMessage(cMsg(getMessagesData().getString("Messages.Prefix") + " " + getMessagesData().getString("Messages.ChooseRarity")));
+                                        sender.sendMessage(cMsg(getMessagesData().getString("Messages.Prefix") + " " + getMessagesData().getString("Messages.ChooseCard")));
                                     }
                                 } else {
-                                    sender.sendMessage(cMsg(getMessagesData().getString("Messages.Prefix") + " " + getMessagesData().getString("Messages.BuyUsage")));
+                                    sender.sendMessage(cMsg(getMessagesData().getString("Messages.Prefix") + " " + getMessagesData().getString("Messages.ChooseRarity")));
                                 }
                             } else {
                                 sender.sendMessage(cMsg(getMessagesData().getString("Messages.Prefix") + " " + getMessagesData().getString("Messages.BuyUsage")));
                             }
                         } else {
-                            sender.sendMessage(cMsg(getMessagesData().getString("Messages.Prefix") + " " + getMessagesData().getString("Messages.NoVault")));
+                            sender.sendMessage(cMsg(getMessagesData().getString("Messages.Prefix") + " " + getMessagesData().getString("Messages.BuyUsage")));
                         }
                     } else {
-                        sender.sendMessage(cMsg(getMessagesData().getString("Messages.Prefix") + " " + getMessagesData().getString("Messages.NoPerms")));
+                        sender.sendMessage(cMsg(getMessagesData().getString("Messages.Prefix") + " " + getMessagesData().getString("Messages.NoVault")));
                     }
                 } else {
-                    sender.sendMessage(cMsg(getMessagesData().getString("Messages.Prefix") + " " + getMessagesData().getString("Messages.NoCmd")));
+                    sender.sendMessage(cMsg(getMessagesData().getString("Messages.Prefix") + " " + getMessagesData().getString("Messages.NoPerms")));
                 }
+            } else {
+                sender.sendMessage(cMsg(getMessagesData().getString("Messages.Prefix") + " " + getMessagesData().getString("Messages.NoCmd")));
             }
+        }
         return true;
     }
 
     public boolean completedRarity(Player p, String rarity) {
         if (!isRarity(rarity).equals("None")) {
             ConfigurationSection cards = getCardsData().getConfigurationSection("Cards." + isRarity(rarity));
-            Set < String > cardKeys = cards.getKeys(false);
+            Set<String> cardKeys = cards.getKeys(false);
             int i = 0;
 
             int numCardsCounter = 0;
-            for (String key: cardKeys) {
+            for (String key : cardKeys) {
                 debugMsg("[TradingCards] Iteration:: " + i);
                 debugMsg("[TradingCards] Key: " + key);
                 debugMsg("[TradingCards] Counter: " + numCardsCounter);
@@ -2392,10 +2437,10 @@ public class TradingCards
     public boolean deleteRarity(Player p, String rarity) {
         if (!isRarity(rarity).equals("None")) {
             ConfigurationSection cards = getCardsData().getConfigurationSection("Cards." + isRarity(rarity));
-            Set < String > cardKeys = cards.getKeys(false);
+            Set<String> cardKeys = cards.getKeys(false);
 
             int numCardsCounter = 0;
-            for (String key: cardKeys) {
+            for (String key : cardKeys) {
                 debugMsg("deleteRarity iteration: " + numCardsCounter);
                 if (hasShiny(p, key, rarity) && hasCard(p, key, rarity) == 0) {
                     debugMsg("Deleted: Cards." + key + ".key2");
@@ -2433,50 +2478,52 @@ public class TradingCards
         this.taskid = Bukkit.getScheduler().scheduleSyncRepeatingTask((Plugin) this, new Runnable() {
                     public void run() {
                         debugMsg("[TradingCards] Task running..");
-                        if (getConfig().getBoolean("General.Schedule-Cards")) if (getConfig().getBoolean("General.Schedule-Cards-Natural")) {
-                            String mob = getConfig().getString("General.Schedule-Card-Mob");
-                            if (isMob(mob.toUpperCase())) {
-                                giveawayNatural(EntityType.valueOf(mob.toUpperCase()), (Player) null);
+                        if (getConfig().getBoolean("General.Schedule-Cards"))
+                            if (getConfig().getBoolean("General.Schedule-Cards-Natural")) {
+                                String mob = getConfig().getString("General.Schedule-Card-Mob");
+                                if (isMob(mob.toUpperCase())) {
+                                    giveawayNatural(EntityType.valueOf(mob.toUpperCase()), (Player) null);
+                                } else {
+                                    System.out.println("[TradingCards] Error! schedule-card-mob is an invalid mob?");
+                                }
                             } else {
-                                System.out.println("[TradingCards] Error! schedule-card-mob is an invalid mob?");
-                            }
-                        } else {
-                            debugMsg("[TradingCards] Schedule cards is true.");
-                            ConfigurationSection rarities = getCardsData().getConfigurationSection("Cards");
-                            Set < String > rarityKeys = rarities.getKeys(false);
-                            String keyToUse = "";
-                            for (String key: rarityKeys) {
-                                debugMsg("[TradingCards] Rarity key: " + key);
-                                if (key.equalsIgnoreCase(getConfig().getString("General.Schedule-Card-Rarity"))) keyToUse = key;
-                            }
-                            debugMsg("[TradingCards] keyToUse: " + keyToUse);
-                            if (!keyToUse.equals("")) {
-                                Bukkit.broadcastMessage(cMsg(String.valueOf(getMessagesData().getString("Messages.Prefix")) + " " + getMessagesData().getString("Messages.ScheduledGiveaway")));
-                                for (Player p: Bukkit.getOnlinePlayers()) {
-                                    ConfigurationSection cards = getCardsData().getConfigurationSection("Cards." + keyToUse);
-                                    Set < String > cardKeys = cards.getKeys(false);
-                                    int rIndex = r.nextInt(cardKeys.size());
-                                    int i = 0;
-                                    String cardName = "";
-                                    for (String theCardName: cardKeys) {
-                                        if (i == rIndex) {
-                                            cardName = theCardName;
-                                            break;
+                                debugMsg("[TradingCards] Schedule cards is true.");
+                                ConfigurationSection rarities = getCardsData().getConfigurationSection("Cards");
+                                Set<String> rarityKeys = rarities.getKeys(false);
+                                String keyToUse = "";
+                                for (String key : rarityKeys) {
+                                    debugMsg("[TradingCards] Rarity key: " + key);
+                                    if (key.equalsIgnoreCase(getConfig().getString("General.Schedule-Card-Rarity")))
+                                        keyToUse = key;
+                                }
+                                debugMsg("[TradingCards] keyToUse: " + keyToUse);
+                                if (!keyToUse.equals("")) {
+                                    Bukkit.broadcastMessage(cMsg(String.valueOf(getMessagesData().getString("Messages.Prefix")) + " " + getMessagesData().getString("Messages.ScheduledGiveaway")));
+                                    for (Player p : Bukkit.getOnlinePlayers()) {
+                                        ConfigurationSection cards = getCardsData().getConfigurationSection("Cards." + keyToUse);
+                                        Set<String> cardKeys = cards.getKeys(false);
+                                        int rIndex = r.nextInt(cardKeys.size());
+                                        int i = 0;
+                                        String cardName = "";
+                                        for (String theCardName : cardKeys) {
+                                            if (i == rIndex) {
+                                                cardName = theCardName;
+                                                break;
+                                            }
+                                            i++;
                                         }
-                                        i++;
+                                        if (p.getInventory().firstEmpty() != -1) {
+                                            p.getInventory().addItem(new ItemStack[]{
+                                                    createPlayerCard(cardName, keyToUse, Integer.valueOf(1), false)
+                                            });
+                                            continue;
+                                        }
+                                        World curWorld = p.getWorld();
+                                        if (p.getGameMode() != GameMode.SURVIVAL) continue;
+                                        curWorld.dropItem(p.getLocation(), createPlayerCard(cardName, keyToUse, Integer.valueOf(1), false));
                                     }
-                                    if (p.getInventory().firstEmpty() != -1) {
-                                        p.getInventory().addItem(new ItemStack[] {
-                                                createPlayerCard(cardName, keyToUse, Integer.valueOf(1), false)
-                                        });
-                                        continue;
-                                    }
-                                    World curWorld = p.getWorld();
-                                    if (p.getGameMode() != GameMode.SURVIVAL) continue;
-                                    curWorld.dropItem(p.getLocation(), createPlayerCard(cardName, keyToUse, Integer.valueOf(1), false));
                                 }
                             }
-                        }
                     }
                 },
                 (hours * 20 * 60 * 60), (hours * 20 * 60 * 60));

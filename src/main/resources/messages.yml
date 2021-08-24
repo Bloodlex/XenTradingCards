@@ -85,3 +85,4 @@ Messages:
   RewardError3: 'You have not collected all of that rarity! %shinyName% cards do not count.'
   RewardBroadcast: '%player% has collected all %rarity% cards!'
   RewardDisabled: 'Rewards have been disabled!'
+  PlayerDeck: 'Player Deck'
